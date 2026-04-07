@@ -1,5 +1,5 @@
 name: CI MLflow
- 
+
 on:
   push:
     branches:
@@ -7,40 +7,42 @@ on:
   pull_request:
     branches:
       - main
- 
+
 env:
-  CSV_URL: "Project/wine-quality.csv"
+  CSV_URL: "wine-quality.csv"
   TARGET_VAR: "quality"
   ALPHA: 0.5
   L1_RATIO: 0.5
   RANDOM_STATE: 42
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
- 
+
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE
-      - uses: actions/checkout@v3
- 
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       # Setup Python 3.12.7
       - name: Set up Python 3.12.7
         uses: actions/setup-python@v4
         with:
           python-version: "3.12.7"
+          cache: 'pip'
       
       # Check Env Variables
       - name: Check Env
         run: |
-          echo $CSV_URL
- 
+          echo "Target CSV: ${{ env.CSV_URL }}"
+
       # Install mlflow
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install mlflow
+          pip install mlflow numpy pandas scikit-learn
       
       # Run as a mlflow project
       - name: Run mlflow project
         run: |
-          mlflow run Project --env-manager=local 
+          mlflow run Project --env-manager=local -P alpha=${{ env.ALPHA }} -P l1_ratio=${{ env.L1_RATIO }} -P dataset=${{ env.CSV_URL }}
